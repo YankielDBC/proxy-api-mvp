@@ -4,9 +4,25 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "top-scored-proxies.json",
+      "use": "@vercel/static-build"
+    },
+    {
+      "src": "top-proxies.json", 
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
+    {
+      "src": "/top-scored-proxies.json",
+      "dest": "/top-scored-proxies.json"
+    },
+    {
+      "src": "/top-proxies.json",
+      "dest": "/top-proxies.json"
+    },
     {
       "src": "/(.*)",
       "dest": "server.js"
