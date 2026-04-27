@@ -34,7 +34,8 @@ let lastMeasurement = null;
 // Load proxies from data.json (original format)
 function loadProxies() {
   // Use LOCAL paths only for Vercel compatibility
-  const scoredPath = path.join(__dirname, 'scored-proxies.json');
+  // Only load top 100 to keep bundle small (<50KB)
+  const scoredPath = path.join(__dirname, 'top-scored-proxies.json');
   const topPath = path.join(__dirname, 'top-proxies.json');
   
   console.log('[ProxyAPI] Looking for scored at:', scoredPath);
