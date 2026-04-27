@@ -44,11 +44,27 @@ function loadProxies() {
   // Load scored proxies if available
   if (fs.existsSync(scoredPath)) {
     try {
-      scoredProxies = JSON.parse(fs.readFileSync(scoredPath, 'utf8'));
+      const raw = fs.readFileSync(scoredPath, 'utf8');
+      scoredProxies = JSON.parse(raw);
       lastMeasurement = scoredProxies[0]?.lastChecked || null;
       console.log('[ProxyAPI] Loaded scored proxies:', scoredProxies.length);
     } catch (e) {
       console.error('[ProxyAPI] Error loading scored proxies:', e.message);
+    }
+  }
+  
+  // Fallback: load from validated-proxies.json if no scored found
+  if (scoredProxies.length === 0) {
+    const validatedPath = path.join(__dirname, 'validated-proxies.json');
+    if (fs.existsSync(validatedPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(validatedPath, 'utf-8'));
+        proxyPool = data;
+        lastValidation = new Date().toISOString();
+        console.log('[ProxyAPI] Loaded from validated-proxies.json');
+      } catch (e) {
+        console.error('[ProxyAPI] Error loading validated:', e.message);
+      }
     }
   }
   
@@ -62,31 +78,8 @@ function loadProxies() {
     }
   }
   
-  // Load original data
-  if (fs.existsSync(dataPath)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-      
-      // Convert from data.json format to our internal format
-      proxyPool.http = data.map(p => ({
-        ip: p.ip,
-        port: p.port,
-        protocol: 'http',
-        host: p.ip,
-        url: p.proxy,
-        working: true,
-        score: p.score || 0,
-        latencyMs: 100, // default
-        geolocation: p.geolocation || { country: 'ZZ', city: 'Unknown' }
-      }));
-      
-      lastValidation = new Date().toISOString();
-      console.log('[ProxyAPI] Loaded from data.json:', proxyPool.http.length, 'proxies');
-      return;
-    } catch (e) {
-      console.error('[ProxyAPI] Error loading data.json:', e.message);
-    }
-  }
+  // Load original data (fallback if no scored proxies)
+  // Removed - we now use scored proxies from top-scored-proxies.json
   
   // Fallback: load validated-proxies.json if exists
   const validatedPath = path.join(process.cwd(), 'validated-proxies.json');
